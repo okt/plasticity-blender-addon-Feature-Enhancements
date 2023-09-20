@@ -404,6 +404,179 @@ class PaintPlasticityFacesOperator(bpy.types.Operator):
             for loop_index in range(loop_start, loop_start + poly.loop_total):
                 color_layer.data[loop_index].color = color
 
+class NonOverlappingMeshesMerger(bpy.types.Operator):
+    bl_idname = "object.merge_nonoverlapping_meshes"
+    bl_label = "Merge Non-overlapping Meshes"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def check_overlap(self, obj1, obj2, overlap_threshold):
+        bm1 = bmesh.new()
+        bm1.from_mesh(obj1.data)
+        bm1.transform(obj1.matrix_world)
+
+        tree1 = mathutils.kdtree.KDTree(len(bm1.verts))
+        for i, v in enumerate(bm1.verts):
+            tree1.insert(v.co, i)
+        tree1.balance()
+
+        bm2 = bmesh.new()
+        bm2.from_mesh(obj2.data)
+        bm2.transform(obj2.matrix_world)
+
+        for v in bm2.verts:
+            co, index, dist = tree1.find(v.co)
+            if dist < overlap_threshold:
+                return True
+
+        return False
+
+    def merge_meshes(self, obj1, obj2):
+        bpy.ops.object.select_all(action='DESELECT') 
+        obj1.select_set(True)
+        obj2.select_set(True)
+        bpy.context.view_layer.objects.active = obj1
+        bpy.ops.object.join()
+
+    def execute(self, context):
+        overlap_threshold = context.scene.overlap_threshold
+
+        merged = True
+
+        while merged:
+            visible_mesh_objects = [obj for obj in bpy.context.scene.objects if obj.type == 'MESH' and obj.visible_get()]
+            non_overlapping_pairs = [(visible_mesh_objects[i], visible_mesh_objects[j]) for i in range(len(visible_mesh_objects)) for j in range(i + 1, len(visible_mesh_objects)) if not self.check_overlap(visible_mesh_objects[i], visible_mesh_objects[j], overlap_threshold)]
+
+            merged = set()
+            merge_occurred = False
+
+            for pair in non_overlapping_pairs:
+                obj1, obj2 = pair
+                if obj1 not in merged and obj2 not in merged:
+                    self.merge_meshes(obj1, obj2)
+                    merged.add(obj1)
+                    merged.add(obj2)
+                    merge_occurred = True
+
+            merged = merge_occurred
+
+        return {'FINISHED'}
+
+class SimilarGeometrySelector(bpy.types.Operator):
+    bl_idname = "object.select_similar_geometry"
+    bl_label = "Select Similar Geometry"
+    bl_options = {'REGISTER', 'UNDO'}
+    
+    similarity_threshold: bpy.props.FloatProperty(
+        name="Similarity Threshold",
+        description="Percentage difference between objects to consider them similar",
+        default=0.2,  # Default 10% difference allowed
+        min=0,
+        max=1
+    )
+
+    def execute(self, context):
+        active_object = context.active_object
+        if active_object and active_object.type == 'MESH':
+            active_vert_count = len(active_object.data.vertices)
+            active_poly_count = len(active_object.data.polygons)
+            
+            # Calculate total surface area for the active object
+            active_surface_area = sum(poly.area for poly in active_object.data.polygons)
+
+            for obj in bpy.context.scene.objects:
+                if obj.type == 'MESH':
+                    vert_count = len(obj.data.vertices)
+                    poly_count = len(obj.data.polygons)
+                    
+                    # Calculate total surface area for the current object
+                    surface_area = sum(poly.area for poly in obj.data.polygons)
+                    
+                    # Calculate percentage difference for vertices, polygons and surface area
+                    vert_diff = abs(vert_count - active_vert_count) / active_vert_count
+                    poly_diff = abs(poly_count - active_poly_count) / active_poly_count
+                    area_diff = abs(surface_area - active_surface_area) / active_surface_area
+
+                    # If all differences are within the threshold, select the object
+                    if vert_diff <= self.similarity_threshold and poly_diff <= self.similarity_threshold and area_diff <= self.similarity_threshold:
+                        obj.select_set(True)
+
+        return {'FINISHED'}
+
+class SelectedJoiner(bpy.types.Operator):
+    bl_idname = "object.join_selected"
+    bl_label = "Join Selected"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        bpy.ops.object.join()
+        
+        return {'FINISHED'}
+
+class SelectedUnjoiner(bpy.types.Operator):
+    bl_idname = "object.unjoin_selected"
+    bl_label = "Unjoin Selected"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        original_objects = context.selected_objects
+        for obj in original_objects:
+            context.view_layer.objects.active = obj
+            bpy.ops.object.mode_set(mode='EDIT')
+            bpy.ops.mesh.select_all(action='SELECT')
+            bpy.ops.mesh.separate(type='LOOSE')
+            bpy.ops.object.mode_set(mode='OBJECT')
+
+            temp_name = obj.name + "_temp_unique_name"
+            for new_obj in context.selected_objects:
+                if new_obj not in original_objects: 
+                    new_obj.name = temp_name
+
+        for obj in bpy.data.objects:
+            if obj.name.startswith(temp_name):
+                obj.name = obj.name.replace(temp_name, "")
+
+        return {'FINISHED'}    
+
+class OpenUVEditorOperator(bpy.types.Operator):
+    bl_idname = "object.open_uv_editor"
+    bl_label = "Open UV Editor"
+    bl_options = {'REGISTER'}
+
+    def execute(self, context):
+        original_resolution_x = context.scene.render.resolution_x
+        original_resolution_y = context.scene.render.resolution_y
+        original_resolution_percentage = context.scene.render.resolution_percentage
+
+        context.scene.render.resolution_x = 800
+        context.scene.render.resolution_y = 600
+        context.scene.render.resolution_percentage = 100
+
+        original_display_type = context.preferences.view.render_display_type
+        context.preferences.view.render_display_type = 'WINDOW'
+
+        if context.selected_objects:
+            for obj in context.selected_objects:
+                if obj.type == 'MESH':
+                    context.view_layer.objects.active = obj
+                    bpy.ops.object.mode_set(mode='EDIT')
+                    bpy.ops.mesh.select_all(action='SELECT')
+
+        bpy.ops.render.view_show('INVOKE_DEFAULT')
+
+        context.scene.render.resolution_x = original_resolution_x
+        context.scene.render.resolution_y = original_resolution_y
+        context.scene.render.resolution_percentage = original_resolution_percentage
+
+        context.preferences.view.render_display_type = original_display_type
+
+        new_window = context.window_manager.windows[-1]
+        new_area = new_window.screen.areas[0]
+        new_area.type = 'IMAGE_EDITOR'
+        new_area.spaces.active.mode = 'UV'
+
+        new_area.spaces.active.image = None
+        
+        return {'FINISHED'}
 
 def are_normals_different(normal_a, normal_b, threshold_angle_degrees=5.0):
     threshold_cosine = math.cos(math.radians(threshold_angle_degrees))
