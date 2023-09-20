@@ -37,6 +37,11 @@ def register():
     bpy.utils.register_class(operators.AutoMarkEdgesOperator)
     bpy.utils.register_class(operators.MergeUVSeams)
     bpy.utils.register_class(operators.PaintPlasticityFacesOperator)
+    bpy.utils.register_class(operators.SimilarGeometrySelector)
+    bpy.utils.register_class(operators.SelectedJoiner)
+    bpy.utils.register_class(operators.SelectedUnjoiner)    
+    bpy.utils.register_class(operators.NonOverlappingMeshesMerger)   
+    bpy.utils.register_class(operators.OpenUVEditorOperator) 
 
     bpy.types.VIEW3D_MT_edit_mesh_select_similar.append(select_similar)
 
@@ -93,6 +98,11 @@ def unregister():
     bpy.utils.unregister_class(operators.AutoMarkEdgesOperator)
     bpy.utils.unregister_class(operators.MergeUVSeams)
     bpy.utils.unregister_class(operators.PaintPlasticityFacesOperator)
+    bpy.utils.unregister_class(operators.SimilarGeometrySelector)
+    bpy.utils.unregister_class(operators.SelectedJoiner) 
+    bpy.utils.unregister_class(operators.SelectedUnjoiner)     
+    bpy.utils.unregister_class(operators.NonOverlappingMeshesMerger)
+    bpy.utils.unregister_class(operators.OpenUVEditorOperator)  
 
     bpy.types.VIEW3D_MT_edit_mesh_select_similar.remove(select_similar)
 
