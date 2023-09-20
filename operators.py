@@ -470,7 +470,7 @@ class SimilarGeometrySelector(bpy.types.Operator):
     similarity_threshold: bpy.props.FloatProperty(
         name="Similarity Threshold",
         description="Percentage difference between objects to consider them similar",
-        default=0.2,  # Default 10% difference allowed
+        default=0.2,  # Default 20% difference allowed
         min=0,
         max=1
     )
