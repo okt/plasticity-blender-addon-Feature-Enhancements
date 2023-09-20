@@ -219,3 +219,12 @@ class PlasticityPanel(bpy.types.Panel):
                          text="Select Plasticity Edges")
             box.operator("mesh.paint_plasticity_faces",
                          text="Paint Plasticity Faces")
+
+            box = layout.box()
+            box.label(text="Bake Tools:")
+            box.operator("object.select_similar_geometry", text="Select Similar Geometry")
+            box.operator("object.join_selected", text="Join Selected")
+            box.operator("object.unjoin_selected", text="Unjoin Selected")
+            box.operator("object.merge_nonoverlapping_meshes", text="Merge Non-overlapping Meshes")
+            box.operator("object.open_uv_editor", text="Open Selected Inside UV Editor")
+
