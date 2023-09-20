@@ -9,7 +9,6 @@ Various QOL improvements to the Plasticity Bridge Blender add-on:
 - Added functionality to arbitrarily select polygons that are part of Plasticity surface groups and mark their boundaries instead of marking boundaries of individual Plasticity surfaces (for mark as Sharp and with added UV seams functionality).⁠blender-bridge⁠
 - Added functionality to merge existing UV seams based on arbitrary Plasticity group polygon selection.⁠blender-bridge⁠
 - Added functionality to select Plasticity groups edges.⁠blender-bridge⁠
-- Changed default port from 8080 to 8090 (conflicting with some AV software).
 - Exposed prop_surface_angle_tolerance parameter, allowing users to have more control when re-meshing and wanting to keep small objects having smooth curves. Works well in combination when using small values for Min Width.
 - SimilarGeometrySelector: select all the objects in a scene with a similar geometry
 - SelectedJoiner: Join selected objects.
