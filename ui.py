@@ -221,9 +221,6 @@ class PlasticityPanel(bpy.types.Panel):
                          text="Select Plasticity Edges")
             box.operator("mesh.paint_plasticity_faces",
                          text="Paint Plasticity Faces")
-
-            box = layout.box()
-            box.label(text="Bake Tools:")
             box.operator("object.select_similar_geometry", text="Select Similar Geometry")
             box.operator("object.join_selected", text="Join Selected")
             box.operator("object.unjoin_selected", text="Unjoin Selected")
