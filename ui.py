@@ -228,5 +228,6 @@ class PlasticityPanel(bpy.types.Panel):
             box.operator("object.join_selected", text="Join Selected")
             box.operator("object.unjoin_selected", text="Unjoin Selected")
             box.operator("object.merge_nonoverlapping_meshes", text="Merge Non-overlapping Meshes")
+            box.prop(scene, "overlap_threshold", text="Overlap Threshold") 
             box.operator("object.open_uv_editor", text="Open Selected Inside UV Editor")
 
