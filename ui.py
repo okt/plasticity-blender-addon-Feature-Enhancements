@@ -188,8 +188,6 @@ class PlasticityPanel(bpy.types.Panel):
                      text="Tri or Ngon", expand=True)     
             
             if context.scene.prop_plasticity_ui_show_advanced_facet:
-                box.prop(scene, "prop_plasticity_facet_tri_or_ngon",
-                         text="Tri or Ngon", expand=True)
                 box.prop(scene, "prop_plasticity_facet_min_width",
                          text="Min width")
                 box.prop(scene, "prop_plasticity_facet_max_width",
