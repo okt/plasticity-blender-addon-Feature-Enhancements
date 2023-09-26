@@ -2,7 +2,9 @@ import bpy
 import math
 
 from .__init__ import plasticity_client
+from .__init__ import load_presets
 from .client import FacetShapeType
+
 
 
 class ConnectButton(bpy.types.Operator):
@@ -17,6 +19,10 @@ class ConnectButton(bpy.types.Operator):
     def execute(self, context):
         server = context.scene.prop_plasticity_server
         plasticity_client.connect(server)
+        
+        # Load the refacet presets after connecting (not ideal, but works for now).
+        load_presets(context.scene)
+        
         return {'FINISHED'}
 
 
@@ -111,8 +117,7 @@ class RefacetButton(bpy.types.Operator):
         max_width = 0
         curve_chord_max = 0
         
-        if context.scene.prop_plasticity_ui_show_advanced_facet:
-            
+        if context.scene.prop_plasticity_ui_show_advanced_facet:            
             if len(context.scene.refacet_presets) > 0: 
                 surface_plane_angle = preset.Face_Angle_tolerance
                 min_width = preset.min_width
@@ -189,6 +194,7 @@ class PlasticityPanel(bpy.types.Panel):
                      text="Scale", slider=True)
 
             layout.separator()
+            
             if not plasticity_client.subscribed:
                 layout.operator("wm.subscribe_all", text="Live link")
             else:
@@ -196,14 +202,11 @@ class PlasticityPanel(bpy.types.Panel):
             layout.separator()
 
             box = layout.box()
-            refacet_op = box.operator("wm.refacet", text="Refacet")
-            box.label(text="Refacet config:")
-            
-            box = layout.box()
+            refacet_op = box.operator("wm.refacet", text="Refacet")                      
             box.label(text="Refacet Presets")
             
             row = box.row()
-            row.template_list("UI_UL_list", "refacet_presets", context.scene, "refacet_presets", context.scene, "active_refacet_preset_index")
+            row.template_list("OBJECT_UL_RefacetPresetsList", "refacet_presets", context.scene, "refacet_presets", context.scene, "active_refacet_preset_index")
             
             col = row.column(align=True)
             col.operator("refacet_preset.add", icon='ADD', text="")
@@ -213,17 +216,7 @@ class PlasticityPanel(bpy.types.Panel):
             box.prop(scene, "prop_plasticity_facet_tri_or_ngon", text="Tri or Ngon", expand=True)     
             
             if len(context.scene.refacet_presets) > 0:
-                preset = context.scene.refacet_presets[context.scene.active_refacet_preset_index]
-                        
-                #box.prop(preset, 'name')
-                #box.prop(preset, 'tolerance')
-                #box.prop(preset, 'angle')
-                #box.prop(preset, 'min_width')
-                #box.prop(preset, 'max_width')
-                #box.prop(preset, 'Edge_chord_tolerance')
-                #box.prop(preset, 'Edge_Angle_tolerance')
-                #box.prop(preset, 'Face_plane_tolerance')
-                #box.prop(preset, 'Face_Angle_tolerance')           
+                preset = context.scene.refacet_presets[context.scene.active_refacet_preset_index]                
             
             if context.scene.prop_plasticity_ui_show_advanced_facet:
                 if len(scene.refacet_presets) > 0:
