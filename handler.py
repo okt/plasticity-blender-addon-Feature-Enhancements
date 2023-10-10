@@ -188,9 +188,6 @@ class SceneHandler:
             normals = item['normals']
             groups = item['groups']
             face_ids = item['face_ids']
-            is_hidden = flags & 1
-            is_visible = flags & 2
-            is_selectable = flags & 4
 
             if object_type == ObjectType.SOLID.value or object_type == ObjectType.SHEET.value:
                 obj = None
@@ -210,10 +207,6 @@ class SceneHandler:
                         for parent in obj.users_collection:
                             parent.objects.unlink(obj)
 
-                if obj:
-                    obj.hide_set(is_hidden or not is_visible)
-                    obj.hide_select = not is_selectable
-
             elif object_type == ObjectType.GROUP.value:
                 if plasticity_id > 0:
                     group_collection = None
@@ -228,9 +221,6 @@ class SceneHandler:
                         group_collection.name = name
                         collections_to_unlink.add(group_collection)
 
-                    if group_collection:
-                        group_collection.hide_viewport = is_hidden or not is_visible
-                        group_collection.hide_select = not is_selectable
 
         # Unlink all mirrored collections, in case they have moved. It doesn't seem like there is a more efficient way to do this??
         for potential_parent in bpy.data.collections:
@@ -244,6 +234,10 @@ class SceneHandler:
             uniqueness_scope = PlasticityIdUniquenessScope.ITEM if object_type != ObjectType.GROUP.value else PlasticityIdUniquenessScope.GROUP
             plasticity_id = item['id']
             parent_id = item['parent_id']
+            flags = item['flags']
+            is_hidden = flags & 1
+            is_visible = flags & 2
+            is_selectable = flags & 4
 
             if plasticity_id == 0:  # root group
                 continue
@@ -266,8 +260,12 @@ class SceneHandler:
 
             if object_type == ObjectType.GROUP.value:
                 parent.children.link(obj)
+                group_collection.hide_viewport = is_hidden or not is_visible
+                group_collection.hide_select = not is_selectable
             else:
                 parent.objects.link(obj)
+                obj.hide_set(is_hidden or not is_visible)
+                obj.hide_select = not is_selectable
 
     def __inbox_for_filename(self, filename):
         plasticity_collection = bpy.data.collections.get("Plasticity")
