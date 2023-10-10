@@ -116,17 +116,22 @@ class RefacetButton(bpy.types.Operator):
         min_width = 0
         max_width = 0
         curve_chord_max = 0
-        
+
         if context.scene.prop_plasticity_ui_show_advanced_facet:            
             if len(context.scene.refacet_presets) > 0: 
+                surface_plane_tolerance = preset.Face_plane_tolerance
                 surface_plane_angle = preset.Face_Angle_tolerance
+                curve_chord_tolerance = preset.Edge_chord_tolerance
+                curve_chord_angle = preset.Edge_Angle_tolerance
                 min_width = preset.min_width
                 max_width = preset.max_width            
             else:
+                surface_plane_tolerance = context.scene.prop_plasticity_surface_plane_tolerance
                 surface_plane_angle = context.scene.prop_plasticity_surface_angle_tolerance
+                curve_chord_tolerance = context.scene.prop_plasticity_curve_chord_tolerance            
+                curve_chord_angle = context.scene.prop_plasticity_curve_angle_tolerance                
                 min_width = context.scene.prop_plasticity_facet_min_width
-                max_width = context.scene.prop_plasticity_facet_max_width                        
-            
+                max_width = context.scene.prop_plasticity_facet_max_width
             if max_width > 0 and max_width < min_width:
                 max_width = min_width
                 
