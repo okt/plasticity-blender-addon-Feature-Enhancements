@@ -15,4 +15,4 @@ Various QOL improvements to the Plasticity Bridge Blender add-on:
 - SelectedUnjoiner: UnJoin selected objects (original names won't be restored).
 - NonOverlappingMeshesMerger: merge all the non-overlapping objects in a scene.  
 - OpenUVEditorOperator:  open selected objects in the UV editor.
-- Refacet Options Presets - create presets for the Refacet options.
+- Refacet Options Presets - create/save/load presets for the Refacet options.
