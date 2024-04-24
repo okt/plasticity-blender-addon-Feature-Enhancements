@@ -4,7 +4,6 @@ import os
 import bpy.app.handlers
 
 from bpy.app.handlers import persistent
-from . import operators, ui
 from .client import PlasticityClient
 from .handler import SceneHandler
 
@@ -12,8 +11,8 @@ bl_info = {
     "name": "Plasticity",
     "description": "A bridge to Plasticity",
     "author": "Nick Kallen, User129863",
-    "version": (1, 0, 6, 3),
-    "blender": (2, 80, 0),
+    "version": (2, 0, 0),
+    "blender": (4, 1, 0),
     "location": "View3D > Sidebar > Plasticity",
     "category": "Object",
 }
